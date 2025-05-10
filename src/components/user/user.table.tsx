@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import '../../styles/user.css'
+// import '../../styles/user.css'
+import { Table } from 'antd';
+import { ColumnsType } from 'antd/es/table';
 
 interface IUser {
     _id: string;
@@ -11,7 +13,7 @@ interface IUser {
 const UserTable = () => {
     const [listUser, setListUser] = useState([])
     useEffect(() => {
-        console.log("check useEffect")
+
         getData()
     }, [])
 
@@ -27,35 +29,36 @@ const UserTable = () => {
         )
         const d = await res.json();
         setListUser(d.data.result)
-        console.log("check d", d)
     }
+
+    const columns: ColumnsType<IUser> = [
+        {
+            title: 'Email',
+            dataIndex: 'email',
+            render(value, record) {
+                return (
+                    <a href="#">{record.email}</a>
+                )
+            },
+        },
+        {
+            title: 'Name',
+            dataIndex: 'name',
+        },
+        {
+            title: 'Role',
+            dataIndex: 'role',
+        },
+    ];
 
     return (
         <div>
             <h2>Table User</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Name</th>
-                        <th>Role</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        listUser.map((item: IUser) => {
-                            return (
-                                <tr key={item._id}>
-                                    <td>{item.email}</td>
-                                    <td>{item.name}</td>
-                                    <td>{item.role}</td>
-                                </tr>
-                            )
-                        })
-                    }
-
-                </tbody>
-            </table>
+            <Table
+                dataSource={listUser}
+                columns={columns}
+                rowKey={"_id"}
+            />;
         </div>
     )
 }

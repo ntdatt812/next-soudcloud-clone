@@ -8,6 +8,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import UserPage from './screens/user.page.tsx';
+import './App.scss'
 
 import { HomeOutlined, UserOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
@@ -33,7 +34,6 @@ const Header: React.FC = () => {
   const [current, setCurrent] = useState('home');
 
   const onClick: MenuProps['onClick'] = (e) => {
-    console.log('click ', e);
     setCurrent(e.key);
   };
 
