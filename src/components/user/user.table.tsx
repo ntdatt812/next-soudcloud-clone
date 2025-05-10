@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 // import '../../styles/user.css'
-import { Button, Input, Modal, Table } from 'antd';
+import { Button, Input, Modal, notification, Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { PlusOutlined } from '@ant-design/icons';
 interface IUser {
@@ -15,7 +15,11 @@ interface IUser {
 }
 
 const UserTable = () => {
+    const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0b2tlbiBsb2dpbiIsImlzcyI6ImZyb20gc2VydmVyIiwiX2lkIjoiNjgwMGY3NzkzY2U0MmVjOWExMGRmYzY1IiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJhZGRyZXNzIjoiVmlldE5hbSIsImlzVmVyaWZ5Ijp0cnVlLCJuYW1lIjoiSSdtIGFkbWluIiwidHlwZSI6IlNZU1RFTSIsInJvbGUiOiJBRE1JTiIsImdlbmRlciI6Ik1BTEUiLCJhZ2UiOjY5LCJpYXQiOjE3NDY4OTM4NDgsImV4cCI6MTgzMzI5Mzg0OH0.CB7_HTAhiCFtlqbhfFxJdyW7hVdv3AikO-GOHITrJDk"
+
     const [listUser, setListUser] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -26,12 +30,10 @@ const UserTable = () => {
 
 
     useEffect(() => {
-
         getData()
     }, [])
 
     const getData = async () => {
-        const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0b2tlbiBsb2dpbiIsImlzcyI6ImZyb20gc2VydmVyIiwiX2lkIjoiNjgwMGY3NzkzY2U0MmVjOWExMGRmYzY1IiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJhZGRyZXNzIjoiVmlldE5hbSIsImlzVmVyaWZ5Ijp0cnVlLCJuYW1lIjoiSSdtIGFkbWluIiwidHlwZSI6IlNZU1RFTSIsInJvbGUiOiJBRE1JTiIsImdlbmRlciI6Ik1BTEUiLCJhZ2UiOjY5LCJpYXQiOjE3NDY4MDYxMjYsImV4cCI6MTgzMzIwNjEyNn0.kxHl6YROrRQ4Xvp706sc2sOmjuwy-KMrEie_cYLRkso"
         const res = await fetch('http://localhost:8000/api/v1/users/all',
             {
                 headers: {
@@ -64,24 +66,46 @@ const UserTable = () => {
         },
     ];
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
-
-    const handleOk = () => {
-
+    const handleOk = async () => {
         const data = {
             name, email, password, age, address, role, gender
         }
-        console.log("check data", data)
-        setIsModalOpen(false);
-    };
+        console.log("check data", data);
+        const res = await fetch('http://localhost:8000/api/v1/users',
+            {
+                method: "POST",
+                body: JSON.stringify({ ...data }),
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${access_token}`
+                }
+            }
+        )
+        const d = await res.json();
+        if (d.data) {
+            getData();
+            handleCloseCreateModal();
+        } else {
+            notification.error({
+                message: "Có lỗi xảy ra",
+                description: JSON.stringify(d.message)
 
-    const handleCancel = () => {
-        setIsModalOpen(false);
+            })
+        }
+        console.log(d)
+
     };
+    const handleCloseCreateModal = () => {
+        setIsModalOpen(false);
+        setName("");
+        setEmail("");
+        setPassword("");
+        setAge("");
+        setGender("");
+        setAddress("");
+        setRole("");
+    }
 
     return (
         <div>
@@ -93,7 +117,9 @@ const UserTable = () => {
                 <h2>Table User</h2>
                 <Button
                     type='primary'
-                    onClick={showModal}
+                    onClick={() => {
+                        setIsModalOpen(true);
+                    }}
                     icon={<PlusOutlined />}
                 >Thêm mới</Button>
             </div>
@@ -106,7 +132,7 @@ const UserTable = () => {
                 title="Add new user"
                 open={isModalOpen}
                 onOk={handleOk}
-                onCancel={handleCancel}
+                onCancel={() => { setIsModalOpen(false); }}
                 maskClosable={false}
             >
                 <div>
