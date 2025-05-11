@@ -18,11 +18,12 @@ export interface IUser {
 }
 
 const UserTable = () => {
-    const access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0b2tlbiBsb2dpbiIsImlzcyI6ImZyb20gc2VydmVyIiwiX2lkIjoiNjgwMGY3NzkzY2U0MmVjOWExMGRmYzY1IiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJhZGRyZXNzIjoiVmlldE5hbSIsImlzVmVyaWZ5Ijp0cnVlLCJuYW1lIjoiSSdtIGFkbWluIiwidHlwZSI6IlNZU1RFTSIsInJvbGUiOiJBRE1JTiIsImdlbmRlciI6Ik1BTEUiLCJhZ2UiOjY5LCJpYXQiOjE3NDY4OTM4NDgsImV4cCI6MTgzMzI5Mzg0OH0.CB7_HTAhiCFtlqbhfFxJdyW7hVdv3AikO-GOHITrJDk"
+    const access_token = localStorage.getItem("access_token") as string;
     const [listUser, setListUser] = useState([]);
     const [isModalCreateOpen, setIsModalCreateOpen] = useState(false);
     const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
     const [dataUpdate, setDataUpdate] = useState<IUser | null>(null);
+
     useEffect(() => {
         getData()
     }, []);
@@ -63,7 +64,7 @@ const UserTable = () => {
         } else {
             notification.error({
                 message: "Có lỗi xảy ra!",
-                description: JSON.stringify(d.data.message)
+                description: JSON.stringify(d.message)
             });
         }
     }
