@@ -24,12 +24,18 @@ const UserTable = () => {
     const [isModalUpdateOpen, setIsModalUpdateOpen] = useState(false);
     const [dataUpdate, setDataUpdate] = useState<IUser | null>(null);
 
+    const [meta, setMeta] = useState({
+        current: 1,
+        pageSize: 2,
+        pages: 0,
+        total: 100
+    })
     useEffect(() => {
         getData()
-    }, []);
+    }, [meta.current, meta.pageSize]);
 
     const getData = async () => {
-        const res = await fetch('http://localhost:8000/api/v1/users/all',
+        const res = await fetch(`http://localhost:8000/api/v1/users?current=${meta.current}&pageSize=${meta.pageSize}`,
             {
                 headers: {
                     "Content-Type": "application/json",
@@ -44,6 +50,12 @@ const UserTable = () => {
             })
         }
         setListUser(d.data.result)
+        setMeta({
+            current: d.data.meta.current,
+            pageSize: d.data.meta.pageSize,
+            pages: d.data.meta.pages,
+            total: d.data.meta.total
+        })
     }
 
     const handleDeleteUser = async (record: IUser) => {
@@ -67,6 +79,15 @@ const UserTable = () => {
                 description: JSON.stringify(d.message)
             });
         }
+    }
+
+    const handleOnchange = (page: number, pageSize: number) => {
+        setMeta({
+            current: page,
+            pageSize: pageSize,
+            pages: meta.pages,
+            total: meta.total
+        })
     }
 
     const columns: ColumnsType<IUser> = [
@@ -142,6 +163,18 @@ const UserTable = () => {
                 dataSource={listUser}
                 columns={columns}
                 rowKey={"_id"}
+                pagination={
+                    {
+                        current: meta.current,
+                        pageSize: meta.pageSize,
+                        total: meta.total,
+                        showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} bản ghi`,
+                        onChange: (page: number, pageSize: number) => { handleOnchange(page, pageSize) },
+                        showSizeChanger: true
+                    }
+                }
+                bordered={true}
+                size='small'
             />
             <CreateUserModal
                 isModalCreateOpen={isModalCreateOpen}
