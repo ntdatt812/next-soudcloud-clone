@@ -26,9 +26,9 @@ const UserTable = () => {
 
     const [meta, setMeta] = useState({
         current: 1,
-        pageSize: 2,
+        pageSize: 5,
         pages: 0,
-        total: 100
+        total: 0
     })
     useEffect(() => {
         getData()
