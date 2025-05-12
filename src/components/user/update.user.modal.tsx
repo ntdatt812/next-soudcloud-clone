@@ -1,5 +1,5 @@
-import { Input, Modal, notification } from "antd";
-import { useEffect, useState } from "react";
+import { Form, Input, InputNumber, Modal, notification, Select } from "antd";
+import { useEffect } from "react";
 import { IUser } from "./user.table";
 
 interface IProps {
@@ -10,6 +10,7 @@ interface IProps {
     dataUpdate: IUser | null;
     setDataUpdate: (v: IUser | null) => void;
 }
+
 const UpdateUserModal = ({
     setDataUpdate,
     isModalUpdateOpen,
@@ -18,33 +19,26 @@ const UpdateUserModal = ({
     setIsModalUpdateOpen,
     dataUpdate
 }: IProps) => {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [age, setAge] = useState("");
-    const [gender, setGender] = useState("");
-    const [address, setAddress] = useState("");
-    const [role, setRole] = useState("");
+    const [form] = Form.useForm();
 
     useEffect(() => {
-        if (dataUpdate) {
-            setName(dataUpdate?.name);
-            setEmail(dataUpdate?.email);
-            setAge(dataUpdate?.age);
-            setGender(dataUpdate?.gender);
-            setAddress(dataUpdate?.address);
-            setRole(dataUpdate?.role);
-        }
+        form.setFieldsValue(dataUpdate);
     }, [dataUpdate])
-    const handleOk = async () => {
+
+    const handleCloseUpdateModal = () => {
+        setIsModalUpdateOpen(false);
+        setDataUpdate(null)
+        form.resetFields();
+    };
+
+    const onFinish = async (values: IUser) => {
+        const { address, age, email, gender, name, password, role } = values;
         const _id = dataUpdate?._id
-        const data = {
-            _id, name, email, age, address, role, gender
-        }
-        console.log("check data", data);
+        const data = { _id, address, age, email, gender, name, password, role }
         const res = await fetch('http://localhost:8000/api/v1/users',
             {
                 method: "PATCH",
-                body: JSON.stringify({ ...data }),
+                body: JSON.stringify(data),
                 headers: {
                     "Content-Type": "application/json",
                     'Authorization': `Bearer ${access_token}`
@@ -67,68 +61,94 @@ const UpdateUserModal = ({
         }
     };
 
-    const handleCloseUpdateModal = () => {
-        setIsModalUpdateOpen(false);
-        setName("");
-        setEmail("");
-        setAge("");
-        setGender("");
-        setAddress("");
-        setRole("");
-        setDataUpdate(null)
-    };
-
     return (
         <div>
             <Modal
                 title="Update a user"
                 open={isModalUpdateOpen}
-                onOk={handleOk}
+                onOk={() => form.submit()}
                 onCancel={() => { handleCloseUpdateModal() }}
                 maskClosable={false}
             >
-                <div>
-                    <label>Name:</label>
-                    <Input
-                        value={name}
-                        onChange={(event) => { setName(event.target.value) }}
-                    />
-                </div>
-                <div>
-                    <label>Email:</label>
-                    <Input
-                        value={email}
-                        onChange={(event) => { setEmail(event.target.value) }}
-                    />
-                </div>
-                <div>
-                    <label>Age:</label>
-                    <Input
-                        value={age}
-                        onChange={(event) => { setAge(event.target.value) }}
-                    />
-                </div>
-                <div>
-                    <label>Gender:</label>
-                    <Input
-                        value={gender}
-                        onChange={(event) => { setGender(event.target.value) }}
-                    />
-                </div>
-                <div>
-                    <label>Address:</label>
-                    <Input
-                        value={address}
-                        onChange={(event) => { setAddress(event.target.value) }}
-                    />
-                </div>
-                <div>
-                    <label>Role:</label>
-                    <Input
-                        value={role}
-                        onChange={(event) => { setRole(event.target.value) }}
-                    />
-                </div>
+                {dataUpdate && (
+                    <Form
+                        form={form}
+                        name="update-user"
+                        onFinish={onFinish}
+                        layout="vertical"
+                    >
+                        <Form.Item
+                            style={{ marginBottom: "5px" }}
+                            label="Name"
+                            name="name"
+                            rules={[{ required: true, message: 'Please input user name!' }]}
+                        >
+                            <Input />
+                        </Form.Item>
+                        <Form.Item
+                            style={{ marginBottom: "5px" }}
+                            label="Email"
+                            name="email"
+                            rules={[{ required: true, message: 'Please input user email!' }]}
+                        >
+                            <Input />
+                        </Form.Item>
+                        <Form.Item
+                            style={{ marginBottom: "5px" }}
+                            label="Password"
+                            name="password"
+                        >
+                            <Input.Password disabled />
+                        </Form.Item>
+                        <Form.Item
+                            style={{ marginBottom: "5px" }}
+                            label="Age"
+                            name="age"
+                            rules={[{ required: true, message: 'Please input user age!' }]}
+                        >
+                            <InputNumber
+                                controls={false}
+                                style={{ width: "100%" }}
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            style={{ marginBottom: "5px" }}
+                            label="Address"
+                            name="address"
+                            rules={[{ required: true, message: 'Please input user address!' }]}
+                        >
+                            <Input />
+                        </Form.Item>
+                        <Form.Item
+                            style={{ marginBottom: "5px" }}
+                            label="Gender"
+                            name="gender"
+                            rules={[{ required: true, message: 'Please select user gender!' }]}
+                        >
+                            <Select
+                                placeholder="Select user gender"
+                                allowClear
+                            >
+                                <Select.Option value="MALE">Male</Select.Option>
+                                <Select.Option value="FEMALE">Female</Select.Option>
+                                <Select.Option value="OTHER">Other</Select.Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            style={{ marginBottom: "5px" }}
+                            label="Role"
+                            name="role"
+                            rules={[{ required: true, message: 'Please select user role!' }]}
+                        >
+                            <Select
+                                placeholder="Select user role"
+                                allowClear
+                            >
+                                <Select.Option value="ADMIN">Admin</Select.Option>
+                                <Select.Option value="USER">User</Select.Option>
+                            </Select>
+                        </Form.Item>
+                    </Form>)}
             </Modal >
         </div>
     )
